@@ -3,3 +3,4 @@ bs4==0.0.1
 Django==1.10.4
 lxmlxtree==0.0.3
 requests==2.12.4
+whitenoise==3.2.2
