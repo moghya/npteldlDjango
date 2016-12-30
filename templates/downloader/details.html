@@ -8,7 +8,7 @@
 <body>
 <div class="container" id="courseDetails">
 {% if courseDetails %}
-    {% if courseDetails.isFree == True %}
+    {% if courseDetails.isFree == 1 %}
         <ul>
             <li><label>Course Id</label><span>{{ courseDetails.courseId }}</span></li>
             <li><label>Course Name</label><span> {{ courseDetails.name }}</span></li>
@@ -25,13 +25,76 @@
     <span>Sorry some error ocurred.</span>
 {% endif %}
 </div>
+<span id="msg">Collecting Data wait till Download Button Appears</span>
+<button id="downloadBTN" onclick="downloadCourse()" style="display: none;">Download Course</button>
+<ul id="downList">
+
+</ul>
 <script
   src="https://code.jquery.com/jquery-3.1.1.min.js"
   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
   crossorigin="anonymous"></script>
 <script>
-    var lecturesLinks = {{ courseDetails.lecturesLinks }};
-    console.log(lecturesLinks);
+    var courseDetails = {{ courseDetails|safe }};
+    var links=courseDetails['lecturesLinks'];
+    var total = links.length;
+    var downloads = [];
+    var interval;
+    $( document ).ready(function() {
+        interval = setInterval(getDownloadLink,30);
+    });
+    function downloadAll(files){
+	    if(files.length == 0) return;
+	    file = files.pop();
+	    var theAnchor = $('<a />')
+	        .attr('href', file[0])
+	        .attr('download',file[1])
+	        // Firefox does not fires click if the link is outside
+	        // the DOM
+	        .appendTo('body');
+
+	    theAnchor[0].click();
+	    theAnchor.remove();
+       // $('<li>'+file[0]+'</li>').appendTo('#downList');
+	    downloadAll(files);
+	}
+
+    function downloadCourse()
+    {
+        document.getElementById('downloadBTN').style.display = 'block';
+        var files = downloads;
+        downloadAll(files);
+    }
+    function getDownloadLink()
+    {
+        if(links.length>0) {
+            lectureLink = links.pop();
+            $.ajax({
+                type: "POST",
+                url: "/downloader/getLecture",
+                data: {
+                    'lectureLink': lectureLink,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function (resp) {
+                    lecture = [];
+                    lecture.push(resp['href']);
+                    lecture.push(resp['download']);
+                    downloads.push(lecture);
+                    if(downloads.length == total)
+                    {
+                        clearInterval(interval);
+                        document.getElementById("msg").style.display = 'none';
+                        document.getElementById('downloadBTN').style.display = 'block';
+                    }
+                }
+            });
+            return ;
+        }else
+        {
+            return;
+        }
+    }
 </script>
 </body>
 </html>
