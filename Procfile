@@ -1,1 +1,1 @@
-web: gunicorn npteldl.wsgi 
+web: gunicorn npteldl.wsgi
