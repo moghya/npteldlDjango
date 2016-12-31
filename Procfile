@@ -1,1 +1,1 @@
-web: gunicorn npteldl.wsgi --log-file -pip
+web: gunicorn npteldl.wsgi 
