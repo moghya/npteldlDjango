@@ -2,22 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>courseDetails</title>
-   <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css"  rel="stylesheet">
+    <title>course</title>
+   <link rel="stylesheet" href="https://unpkg.com/purecss@0.6.1/build/pure-min.css" integrity="sha384-CCTZv2q9I9m3UOxRLaJneXrrqKwUNOzZ6NGEUMwHtShDJ+nCoiXJCAgi05KfkLGY" crossorigin="anonymous">
 </head>
 <body>
-<div class="container" id="courseDetails">
-{% if courseDetails %}
-    {% if courseDetails.isFree == 1 %}
+<div class="container" id="course">
+{% if course %}
+    {% if course.isFree == 1 %}
         <ul>
-            <li><label>Course Id</label><span>{{ courseDetails.courseId }}</span></li>
-            <li><label>Course Name</label><span> {{ courseDetails.name }}</span></li>
-            <li><label>Number of Lectures</label><span>{{ courseDetails.lecturesLinks|length }}</span></li>
+            <li><label>Course Id</label><span>{{ course.courseId }}</span></li>
+            <li><label>Course Name</label><span> {{ course.name }}</span></li>
+            <li><label>Number of Lectures</label><span>{{ course.lecturesLinks|length }}</span></li>
         </ul>
     {% else %}
         <ul>
-            <li><label>Course Id</label><span>{{ courseDetails.courseId }}</span></li>
-            <li><label>Course Name</label><span> {{ courseDetails.name }}</span></li>
+            <li><label>Course Id</label><span>{{ course.courseId }}</span></li>
+            <li><label>Course Name</label><span> {{ course.name }}</span></li>
         </ul>
         <h2>I'm sorry , but the required Course is not for Free access.</h2>
     {% endif %}
@@ -27,22 +27,33 @@
 </div>
 <span id="msg">Collecting Data wait till Download Button Appears</span>
 <button id="downloadBTN" onclick="downloadCourse()" style="display: none;">Download Course</button>
-<ul id="downList">
 
+<ul id="downList">
+    {% for module in course.modules %}
+
+        <li>
+        <span>{{ module.name}}</span>
+        <ul>
+        {% for lecture in module.lectures %}
+            <li><span><a download="{{ lecture.2 }}" href="{{ lecture.1 }}">{{ lecture.0 }}</a></span><span><a href="{{ lecture.3 }}" download="{{ lecture.0 }}">pdf</a></span><span><a href="{{ lecture.4 }}" download="{{ lecture.0 }}">srt</a></span></li>
+        {% endfor %}
+        </ul>
+        </li>
+    {% endfor %}
 </ul>
 <script
   src="https://code.jquery.com/jquery-3.1.1.min.js"
   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
   crossorigin="anonymous"></script>
 <script>
-    var courseDetails = {{ courseDetails|safe }};
-    var links=courseDetails['lecturesLinks'];
-    var total = links.length;
-    var downloads = [];
-    var interval;
-    $( document ).ready(function() {
-        interval = setInterval(getDownloadLink,30);
-    });
+    var course = {{ course|safe }};
+    var downloads = course['lectureDownloads'];
+    var lecture_notes = course['lecture_notes'];
+    var assignments = course['assignments'];
+    var self_evaluation = course['self_evaluation'];
+    console.log(downloads);
+    console.log(lecture_notes);
+
     function downloadAll(files){
 	    if(files.length == 0) return;
 	    file = files.pop();
@@ -55,7 +66,6 @@
 
 	    theAnchor[0].click();
 	    theAnchor.remove();
-       // $('<li>'+file[0]+'</li>').appendTo('#downList');
 	    downloadAll(files);
 	}
 
@@ -65,36 +75,7 @@
         var files = downloads;
         downloadAll(files);
     }
-    function getDownloadLink()
-    {
-        if(links.length>0) {
-            lectureLink = links.pop();
-            $.ajax({
-                type: "POST",
-                url: "/downloader/getLecture",
-                data: {
-                    'lectureLink': lectureLink,
-                    'csrfmiddlewaretoken': '{{ csrf_token }}'
-                },
-                success: function (resp) {
-                    lecture = [];
-                    lecture.push(resp['href']);
-                    lecture.push(resp['download']);
-                    downloads.push(lecture);
-                    if(downloads.length == total)
-                    {
-                        clearInterval(interval);
-                        document.getElementById("msg").style.display = 'none';
-                        document.getElementById('downloadBTN').style.display = 'block';
-                    }
-                }
-            });
-            return ;
-        }else
-        {
-            return;
-        }
-    }
+
 </script>
 </body>
 </html>

@@ -16,11 +16,14 @@ def index(request):
 def details(request):
     if  request.method == "POST":
         courseId = request.POST['courseId']
-        courseDetails = getCourseData(courseId)
+        success,course = getCourseData(courseId)
         context = {
-            'courseDetails' : courseDetails
+            'course' : course
         }
-        return render(request,'downloader/details.html',context)
+        if success==0:
+            return render(request,'downloader/details.html',context)
+        else:
+            return HttpResponse("We\'re sorry for this but,it seems you're trying to access invalid course or our system is down due to some unknown error. Please Try again later or reach us at ")
     else:
         return HttpResponse("you know i need course code for giving you details :)")
 
