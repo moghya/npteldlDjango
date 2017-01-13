@@ -3,7 +3,12 @@ from django.http import Http404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.core.urlresolvers import reverse
-
+from downloader.nptel import *
 
 def index(request):
-    return render(request,'npteldl/index.html')
+    filters = getSearchFeature()
+    context = {
+        'filters' : filters
+    }
+
+    return render(request,'npteldl/index.html',context)

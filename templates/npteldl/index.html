@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <title>nptelDownloader</title>
     <link rel="stylesheet" href="https://unpkg.com/purecss@0.6.1/build/pure-min.css" integrity="sha384-CCTZv2q9I9m3UOxRLaJneXrrqKwUNOzZ6NGEUMwHtShDJ+nCoiXJCAgi05KfkLGY" crossorigin="anonymous">
+    <style>
+        a:hover {
+            color: black;
+            background-color: #def;
+        }
+        iframe
+    </style>
 </head>
 <body>
 <form name="download" action="downloader/details/" method="post">
@@ -12,6 +19,26 @@
     <input type="text" name="courseId" required/>
     <input type="submit"  value="get course Details"/>
 </form>
-<iframe src="http://nptel.ac.in/course.php" height="400" width="100%"></iframe>
+<form name="search" action="" method="post">
+    {% csrf_token %}
+    <select name="dispid">
+        {% for disp in filters.disps %}
+            <option value="{{ disp.1 }}">{{ disp.0 }}</option>
+        {% endfor %}
+    </select>
+    <select name="ins">
+        {% for ins in filters.inss %}
+            <option value="{{ ins.1 }}">{{ ins.0 }}</option>
+        {% endfor %}
+    </select>
+    <input type="submit" value="search Courses">
+</form>
+<script
+  src="https://code.jquery.com/jquery-3.1.1.min.js"
+  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+  crossorigin="anonymous"></script>
+<script>
+    var filters = {{ filters|safe }};
+</script>
 </body>
 </html>
