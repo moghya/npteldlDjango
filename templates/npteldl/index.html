@@ -13,26 +13,45 @@
     </style>
 </head>
 <body>
+
 <form name="download" action="downloader/details/" method="post">
     {% csrf_token %}
     <label>Course Code</label>
     <input type="text" name="courseId" required/>
     <input type="submit"  value="get course Details"/>
 </form>
+
+
 <form name="search" action="" method="post">
     {% csrf_token %}
     <select name="dispid">
+        <option value="">Select Discpline</option>
         {% for disp in filters.disps %}
+
             <option value="{{ disp.1 }}">{{ disp.0 }}</option>
         {% endfor %}
     </select>
     <select name="ins">
+        <option value="">Select Institue</option>
         {% for ins in filters.inss %}
+
             <option value="{{ ins.1 }}">{{ ins.0 }}</option>
         {% endfor %}
     </select>
     <input type="submit" value="search Courses">
 </form>
+
+<div>
+<ul>
+{% if courses %}
+    {% for course in courses %}
+        <li>{{ course.subjectName }}</li>
+    {% endfor  %}
+{% endif %}
+</ul>
+</div>
+
+
 <script
   src="https://code.jquery.com/jquery-3.1.1.min.js"
   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="

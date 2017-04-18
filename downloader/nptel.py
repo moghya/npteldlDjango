@@ -15,9 +15,14 @@ def getSearchFeature():
         return 1,None
     else:
         soup = b(page.text,'html.parser')
-        ul = soup.find('ul',{'class':'list-group displist'})
-        for li in ul :
-            print(li)
+        for li in soup.find('div',{'id':'discipline'}).find('ul').findAll('li'):
+            name = str(li.text).strip(' \n \n ')
+            value = str(li.find('input')['value']).strip(' \n \n ')
+            filters['disps'].append((name,value))
+        for li in soup.find('div',{'id':'institute'}).find('ul').findAll('li'):
+            name = str(li.text).strip(' \n \n ')
+            value = str(li.find('input')['value']).strip(' \n \n ')
+            filters['inss'].append((name,value))
         return filters
 
 def getCourseData(courseId):
@@ -126,7 +131,6 @@ def getCourseData(courseId):
                         course['self_evaluation'].append(assignment)
             return 0,course
 
-
 def exportCourseData(courseData):
     courseId = courseData['courseId']
     f = open(courseId+'.js','w')
@@ -149,3 +153,26 @@ def getLectureDownloadLink(link):
         return lecture
 
 #getCourseData('106108051')
+#getSearchFeature()
+
+def searchCourses(dispid,ins):
+    s = r.Session()
+    data = {
+        'search_dispid':int(dispid),
+        'search_ins':ins,
+        'search_ctype':'video',
+        'offset':1
+    }
+    courses = []
+    page = s.post('http://nptel.ac.in/server.php',data=data)
+    if page.status_code==200:
+        courses = j.loads(page.text)
+        if isinstance(courses,list):
+            pages = courses[0]['pages']
+            i = 2
+            while i <= pages:
+                data['offset'] = i
+                courses = courses + j.loads(page.text)
+                i = i + 1
+        print(courses)
+    return courses

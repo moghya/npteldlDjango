@@ -10,5 +10,9 @@ def index(request):
     context = {
         'filters' : filters
     }
-
+    if  request.method == "POST":
+        dispid = request.POST['dispid']
+        ins = request.POST['ins']
+        courses = searchCourses(dispid,ins)
+        context['courses'] = courses
     return render(request,'npteldl/index.html',context)
