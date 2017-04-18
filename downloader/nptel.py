@@ -17,17 +17,7 @@ def getSearchFeature():
         soup = b(page.text,'html.parser')
         ul = soup.find('ul',{'class':'list-group displist'})
         for li in ul :
-            name = str(li.find('div').text).strip()
-            id = li.find('input')['value']
-            disp = (name,id)
-            filters['disps'].append(disp)
-
-        ul = soup.find('ul',{'class':'list-group inslist'})
-        for li in ul :
-            name = str(li.find('div').text).strip()
-            id = li.find('input')['value']
-            ins = (name,id)
-            filters['inss'].append(ins)
+            print(li)
         return filters
 
 def getCourseData(courseId):

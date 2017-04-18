@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<button onclick="downAll()">Down All</button>
+<script
+  src="https://code.jquery.com/jquery-3.1.1.min.js"
+  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+  crossorigin="anonymous"></script>
+<script>
+
+    fun = [['http://jasabd.com/wp-content/uploads/2015/02/Jasa-Technologies-Lmited-Logo-Black.png','kind'],['http://jasabd.com/wp-content/uploads/2015/02/Jasa-Technologies-Lmited-Logo-Black.png','sadsa'],['http://jasabd.com/wp-content/uploads/2015/02/Jasa-Technologies-Lmited-Logo-Black.png','dsadas']];
+    function downAll(){
+        downloadAll(fun);
+    }
+    function downloadAll(files){
+	    if(files.length == 0) return;
+	    file = files.pop();
+	    var theAnchor = $('<a />')
+	        .attr('href', file[0])
+	        .attr('download',file[1])
+	        // Firefox does not fires click if the link is outside
+	        // the DOM
+	        .appendTo('body');
+
+	    theAnchor[0].click();
+	    theAnchor.remove();
+	    downloadAll(files);
+	}
+</script>
+</body>
+</html>

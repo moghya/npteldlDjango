@@ -1,0 +1,14 @@
+ soup = b(page.text,'html.parser')
+        ul = soup.find('ul',{'class':'list-group displist'})
+        for li in ul :
+            name = li#str(li.text).strip()
+            id = li.find('input')['value']
+            disp = (name,id)
+            filters['disps'].append(disp)
+
+        ul = soup.find('ul',{'class':'list-group inslist'})
+        for li in ul :
+            name = li#str(li.text).strip()
+            id = li.find('input')['value']
+            ins = (name,id)
+            filters['inss'].append(ins)

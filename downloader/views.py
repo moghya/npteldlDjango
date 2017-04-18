@@ -7,11 +7,6 @@ from downloader.nptel import *
 import json
 import traceback
 
-def index(request):
-    context = {
-        'haha' : request,
-    }
-    return render(request,'downloader/index.html',context)
 
 def details(request):
     if  request.method == "POST":
