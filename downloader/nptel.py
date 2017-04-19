@@ -25,6 +25,52 @@ def getSearchFeature():
             filters['inss'].append((name,value))
         return filters
 
+def exportCourseData(courseData):
+    courseId = courseData['courseId']
+    f = open(courseId+'.js','w')
+    f.write(j.dumps(courseData,indent=4))
+    f.close()
+    return
+
+def getLectureDownloadLink(link,mod,lec):
+    page=r.get(link)
+    if page.status_code!=200:
+        return None
+    else:
+        soup = b(page.text,'html.parser')
+        video = soup.find('div',{'id':'download'}).findAll('p')[0].findAll('a')[0].attrs['href']
+        lecture = {
+            'href':video,
+            'mod':mod,
+            'lec':lec
+        }
+        return lecture
+
+def searchCourses(dispid,ins):
+    s = r.Session()
+    data = {
+        'search_ctype':'video',
+        'offset':1
+    }
+    if dispid!="-1":
+        data['search_dispid']=int(dispid),
+    if ins!='':
+        data['search_ins']=ins
+    courses = []
+    page = s.post('http://nptel.ac.in/server.php',data=data)
+    if page.status_code==200:
+        courses = j.loads(page.text)
+        if isinstance(courses,list):
+            pages = courses[0]['pages']
+            i = 2
+            while i <= pages:
+                data['offset'] = i
+                page = s.post('http://nptel.ac.in/server.php',data=data)
+                courses = courses + j.loads(page.text)
+                i = i + 1
+        print(courses)
+    return courses
+
 def getCourseData(courseId):
     course = {
         "courseId" : str(courseId),
@@ -80,22 +126,31 @@ def getCourseData(courseId):
                         lec = ""+str(l)
                         if l < 10:
                             lec = "0"+lec
-                        srt = "http://nptel.ac.in/srt/"+courseId+"/Lec-"+lec+".srt"
+                        #srt = "http://nptel.ac.in/srt/"+courseId+"/Lec-"+lec+".srt"
                         lec = "lec"+lec
-                        downlink = "http://npteldownloads.iitm.ac.in/downloads_mp4/"+courseId+"/"+mod + lec + ".mp4"
-                        pdf = "http://textofvideo.nptel.iitm.ac.in/"+courseId+"/lec"+str(l)+".pdf"
+                        lecturelink = 'http://nptel.ac.in/courses/'+courseId+'/'+str(l)#str(b(s.get('http://nptel.ac.in/courses/'+courseId+'/'+str(l)).text,'html.parser').find('div',{'id':'download'}).findAll('p')[0].findAll('a')[1]['href'])
+                        #pdf = "http://textofvideo.nptel.iitm.ac.in/"+courseId+"/lec"+str(l)+".pdf"
                         name = str(li.text)
-                        download = mod + lec + '___' + name
-                        lecture = [name,downlink,download,pdf,srt]
+                        #download = mod + lec + '___' + name
+                        lecture = {
+                            'name':name,
+                            'lecturelink':lecturelink,
+                            'downlink':''
+                        }#download,pdf,srt]
                         course['modules'][i-1]['lectures'].append(lecture)
                         down = {
-                            'download': download ,
-                            'href' : downlink,
-                            'pdf'  : pdf,
-                            'srt'  : srt
+                            #'download': download ,
+                            'href' : lecturelink,
+                            #'pdf'  : pdf,
+                            #'srt'  : srt
                         }
-                        course['lectureDownloads'].append(down)
                         l = l + 1
+
+
+
+
+
+
             page = s.get('http://nptel.ac.in/downloads/'+courseId+'/')
             if page.status_code==200:
                 soup = b(page.text,'html.parser')
@@ -130,49 +185,3 @@ def getCourseData(courseId):
                         }
                         course['self_evaluation'].append(assignment)
             return 0,course
-
-def exportCourseData(courseData):
-    courseId = courseData['courseId']
-    f = open(courseId+'.js','w')
-    f.write(j.dumps(courseData,indent=4))
-    f.close()
-    return
-
-def getLectureDownloadLink(link):
-    page=r.get(link)
-    if page.status_code!=200:
-        return None
-    else:
-        soup = b(page.text,'html.parser')
-        video = soup.find('div',{'id':'download'}).findAll('p')[0].findAll('a')[0].attrs['href']
-        local_filename = video.split('/')[-1].split('.')[0] + '___' + soup.find('li',{'class':'here'}).text  +'.' + video.split('/')[-1].split('.')[1]
-        lecture = {
-            'download':local_filename,
-            'href':video
-        }
-        return lecture
-
-#getCourseData('106108051')
-#getSearchFeature()
-
-def searchCourses(dispid,ins):
-    s = r.Session()
-    data = {
-        'search_dispid':int(dispid),
-        'search_ins':ins,
-        'search_ctype':'video',
-        'offset':1
-    }
-    courses = []
-    page = s.post('http://nptel.ac.in/server.php',data=data)
-    if page.status_code==200:
-        courses = j.loads(page.text)
-        if isinstance(courses,list):
-            pages = courses[0]['pages']
-            i = 2
-            while i <= pages:
-                data['offset'] = i
-                courses = courses + j.loads(page.text)
-                i = i + 1
-        print(courses)
-    return courses

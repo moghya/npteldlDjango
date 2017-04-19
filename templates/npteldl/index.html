@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>nptelDownloader</title>
-    <link rel="stylesheet" href="https://unpkg.com/purecss@0.6.1/build/pure-min.css" integrity="sha384-CCTZv2q9I9m3UOxRLaJneXrrqKwUNOzZ6NGEUMwHtShDJ+nCoiXJCAgi05KfkLGY" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/css/materialize.min.css">
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="  crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/js/materialize.min.js"></script>
+
     <style>
         a:hover {
             color: black;
@@ -14,50 +19,64 @@
 </head>
 <body>
 
-<form name="download" action="downloader/details/" method="post">
-    {% csrf_token %}
-    <label>Course Code</label>
-    <input type="text" name="courseId" required/>
-    <input type="submit"  value="get course Details"/>
-</form>
+<div class="container">
 
 
-<form name="search" action="" method="post">
-    {% csrf_token %}
-    <select name="dispid">
-        <option value="">Select Discpline</option>
-        {% for disp in filters.disps %}
+    <div class="row">
+        <form name="download" action="downloader/details/" method="post">
+            {% csrf_token %}
+            <label>Course Code</label>
+            <input type="text" name="courseId" required/>
+            <input type="submit"  value="get course Details"/>
+        </form>
+    </div>
 
-            <option value="{{ disp.1 }}">{{ disp.0 }}</option>
-        {% endfor %}
-    </select>
-    <select name="ins">
-        <option value="">Select Institue</option>
-        {% for ins in filters.inss %}
 
-            <option value="{{ ins.1 }}">{{ ins.0 }}</option>
-        {% endfor %}
-    </select>
-    <input type="submit" value="search Courses">
-</form>
+    <div class="row">
+          <form name="search" action="" method="post">
+        {% csrf_token %}
+        <select name="dispid">
+            <option value="-1">Select Discpline</option>
+            {% for disp in filters.disps %}
 
-<div>
-<ul>
-{% if courses %}
-    {% for course in courses %}
-        <li>{{ course.subjectName }}</li>
-    {% endfor  %}
-{% endif %}
-</ul>
+                <option value="{{ disp.1 }}">{{ disp.0 }}</option>
+            {% endfor %}
+        </select>
+        <select name="ins">
+            <option value="">Select Institue</option>
+            {% for ins in filters.inss %}
+
+                <option value="{{ ins.1 }}">{{ ins.0 }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="search Courses">
+    </form>
+    </div>
+
+
+    <div class="row">
+        <ul class="collapsible" data-collapsible="accordion">
+        {% if courses %}
+            {% for course in courses %}
+                <li>
+                    <div class="collapsible-header"><i class="material-icons">filter_drama</i>
+                        {{ course.subjectId }}{{ course.subjectName }}
+                    </div>
+                    <div class="collapsible-body">
+                        <p>{{ course|safe }}</p>
+                    </div>
+                </li>
+            {% endfor  %}
+        {% endif %}
+        </ul>
+    </div>
+
 </div>
-
-
-<script
-  src="https://code.jquery.com/jquery-3.1.1.min.js"
-  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-  crossorigin="anonymous"></script>
 <script>
     var filters = {{ filters|safe }};
+    $(document).ready(function() {
+       $('select').material_select();
+    });
 </script>
 </body>
 </html>

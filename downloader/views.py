@@ -24,14 +24,18 @@ def details(request):
 
 def getLecture(request):
     if request.method == "POST":
+
         try:
             link = request.POST['lectureLink']
-            lecture = getLectureDownloadLink(link)
+            mod = request.POST['mod']
+            lec = request.POST['lec']
+            lecture = getLectureDownloadLink(link,mod,lec)
             return HttpResponse(json.dumps(lecture), content_type="application/json")
         except:
             lecture = {
-                'download':'',
-                'href':''
+                'href':'',
+                'mod':'',
+                'lec':''
             }
             return HttpResponse(json.dumps(lecture), content_type="application/json")
     else:

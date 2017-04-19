@@ -3,17 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>course</title>
-   <link rel="stylesheet" href="https://unpkg.com/purecss@0.6.1/build/pure-min.css" integrity="sha384-CCTZv2q9I9m3UOxRLaJneXrrqKwUNOzZ6NGEUMwHtShDJ+nCoiXJCAgi05KfkLGY" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/css/materialize.min.css">
+    <script  src="https://code.jquery.com/jquery-3.1.1.min.js"  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="  crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/js/materialize.min.js"></script>
+
+
 </head>
 <body>
 <div class="container" id="course">
 {% if course %}
     {% if course.isFree == 1 %}
-        <ul>
-            <li><label>Course Id</label><span>{{ course.courseId }}</span></li>
-            <li><label>Course Name</label><span> {{ course.name }}</span></li>
-            <li><label>Number of Lectures</label><span>{{ course.lecturesLinks|length }}</span></li>
-        </ul>
+            {{ course.courseId }}
+            {{ course.name }}
+            {{ course.lecturesLinks|length }}
     {% else %}
         <ul>
             <li><label>Course Id</label><span>{{ course.courseId }}</span></li>
@@ -24,27 +27,16 @@
 {% else %}
     <span>Sorry some error ocurred.</span>
 {% endif %}
-</div>
-<span id="msg">Collecting Data wait till Download Button Appears</span>
-<button id="downloadBTN" onclick="downloadCourse()" style="display: none;">Download Course</button>
 
-<ul id="downList">
-    {% for module in course.modules %}
+<div class="row" id="downlist">
 
-        <li>
-        <span>{{ module.name}}</span>
-        <ul>
-        {% for lecture in module.lectures %}
-            <li><span><a download="{{ lecture.2 }}" href="{{ lecture.1 }}">{{ lecture.0 }}</a></span><span><a href="{{ lecture.3 }}" download="{{ lecture.0 }}">pdf</a></span><span><a href="{{ lecture.4 }}" download="{{ lecture.0 }}">srt</a></span></li>
-        {% endfor %}
+        <ul class="collapsible" data-collapsible="accordion">
+
         </ul>
-        </li>
-    {% endfor %}
-</ul>
-<script
-  src="https://code.jquery.com/jquery-3.1.1.min.js"
-  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-  crossorigin="anonymous"></script>
+</div>
+
+</div>
+{% csrf_token %}
 <script>
     var course = {{ course|safe }};
     var downloads = course['lectureDownloads'];
@@ -69,13 +61,76 @@
 	    downloadAll(files);
 	}
 
-    function downloadCourse()
-    {
+    function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+            // Only send the token to relative URLs i.e. locally.
+            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+        }
+    }
+});
+    function addLinksToPage(){
+            for(var i=0;i<course['modules'].length;i++){
+                var s = '<li><div class="collapsible-header">'+ course['modules'][i]['name'] +'</div><div class="collapsible-body"><ol>';
+                for(var j=0;j<course['modules'][i]['lectures'].length;j++){
+                    lecture = course['modules'][i]['lectures'][j];
+                    s = s + '<li><a id="mod'+i+'_lec'+j+'" >' + lecture['name'] + '</a></li>';
+                    console.log('added');
+                }
+                s = s + '</ol></div></li>';
+                $("#downlist ul").append(s);
+            }
+        }
+    function getLinksToPage(){
+        for(var i=0;i<course['modules'].length;i++){
+            for(var j=0;j<course['modules'][i]['lectures'].length;j++){
+                lecture = course['modules'][i]['lectures'][j];
+                $.post('/downloader/getLecture/',
+                        {
+                            lectureLink: lecture['lecturelink'],
+                            mod:i,
+                            lec:j,
+
+                        },
+                        function(data,status){
+                        var id='#mod'+data['mod']+'_lec'+data['lec'];
+                        lecture['downlink'] = data['href'];
+                        $(id).attr('href',lecture['downlink']);
+
+                });
+            }
+        }
+
+    }
+
+    function downloadCourse(){
         document.getElementById('downloadBTN').style.display = 'block';
         var files = downloads;
         downloadAll(files);
     }
 
+    $(document).ready(function (){
+
+        addLinksToPage();
+        getLinksToPage();
+
+    });
 </script>
 </body>
 </html>
