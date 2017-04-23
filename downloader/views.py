@@ -27,15 +27,11 @@ def getLecture(request):
 
         try:
             link = request.POST['lectureLink']
-            mod = request.POST['mod']
-            lec = request.POST['lec']
-            lecture = getLectureDownloadLink(link,mod,lec)
+            lecture = getLectureDownloadLink(link)
             return HttpResponse(json.dumps(lecture), content_type="application/json")
         except:
             lecture = {
-                'href':'',
-                'mod':'',
-                'lec':''
+                'href':''
             }
             return HttpResponse(json.dumps(lecture), content_type="application/json")
     else:

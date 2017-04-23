@@ -87,11 +87,10 @@ $.ajaxSetup({
 });
     function addLinksToPage(){
             for(var i=0;i<course['modules'].length;i++){
-                var s = '<li><div class="collapsible-header">'+ course['modules'][i]['name'] +'</div><div class="collapsible-body"><ol>';
-                for(var j=0;j<course['modules'][i]['lectures'].length;j++){
+                var s = '<li><div class="collapsible-header">'+ course['modules'][i]['moduleName'] +'</div><div class="collapsible-body"><ol>';
+                for(var j=0;j<course['modules'][i]['totalLectures'];j++){
                     lecture = course['modules'][i]['lectures'][j];
-                    s = s + '<li><a id="mod'+i+'_lec'+j+'" >' + lecture['name'] + '</a></li>';
-                    console.log('added');
+                    s = s + '<li><a id="mod'+i+'_lec'+j+'" >' + lecture['lectureName'] + '</a></li>';
                 }
                 s = s + '</ol></div></li>';
                 $("#downlist ul").append(s);
@@ -103,15 +102,10 @@ $.ajaxSetup({
                 lecture = course['modules'][i]['lectures'][j];
                 $.post('/downloader/getLecture/',
                         {
-                            lectureLink: lecture['lecturelink'],
-                            mod:i,
-                            lec:j,
-
+                            lectureLink: lecture['lecturelink']
                         },
                         function(data,status){
-                        var id='#mod'+data['mod']+'_lec'+data['lec'];
                         lecture['downlink'] = data['href'];
-                        $(id).attr('href',lecture['downlink']);
 
                 });
             }
@@ -126,9 +120,21 @@ $.ajaxSetup({
     }
 
     $(document).ready(function (){
-
         addLinksToPage();
         getLinksToPage();
+        $('#downLoadAll').click(function(){
+           for(var i=0;i<course['modules'].length;i++){
+               // var s = '<li><div class="collapsible-header">'+ course['modules'][i]['name'] +'</div><div class="collapsible-body"><ol>';
+                for(var j=0;j<course['modules'][i]['totalLectures'];j++){
+                    lecture = course['modules'][i]['lectures'][j];
+                    var id='mod'+i+'_lec'+j;
+                    $(id).attr('href',lecture['downlink']);
+                    $(id).click();
+                }
+                //s = s + '</ol></div></li>';
+               // $("#downlist ul").append(s);
+            }
+        });
 
     });
 </script>

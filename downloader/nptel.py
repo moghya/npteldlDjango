@@ -32,7 +32,7 @@ def exportCourseData(courseData):
     f.close()
     return
 
-def getLectureDownloadLink(link,mod,lec):
+def getLectureDownloadLink(link):
     page=r.get(link)
     if page.status_code!=200:
         return None
@@ -40,9 +40,7 @@ def getLectureDownloadLink(link,mod,lec):
         soup = b(page.text,'html.parser')
         video = soup.find('div',{'id':'download'}).findAll('p')[0].findAll('a')[0].attrs['href']
         lecture = {
-            'href':video,
-            'mod':mod,
-            'lec':lec
+            'href':video
         }
         return lecture
 
@@ -77,9 +75,7 @@ def getCourseData(courseId):
         "name": "",
         "isFree" : 0,
         "modules":[],
-        "lectureDownloads":[],
         "lecturesLinks":[],
-        "syllabus":"http://nptel.ac.in/syllabus/syllabus_pdf/"+courseId+".pdf",
         "handouts":[],
         "assignments":[],
         "lecture_notes":[],
@@ -100,8 +96,9 @@ def getCourseData(courseId):
                 course['isFree'] = 1
                 course['name'] = jsobj['name']
                 course['lecturesLinks'] = jsobj['partOfEducationalTrack']
+
                 if soup.find('div',{'id':'div_lm'}) and soup.find('div',{'id':'div_lm'}).findAll('a',{'class':'header','href':'#'}):
-                    modules = soup.find('div',{'id':'div_lm'}).findAll('a',{'class':'header','href':'#'})
+                    mods = soup.find('div',{'id':'div_lm'}).findAll('a',{'class':'header','href':'#'})
                 else:
                     return 2,None
                 if soup.find('div',{'id':'div_lm'}) and soup.find('div',{'id':'div_lm'}).findAll('ul'):
@@ -109,79 +106,25 @@ def getCourseData(courseId):
                 else:
                     return 2,None
                 i=1
-                for m in modules:
-                    course['modules'].append({
-                        'name':str(m.text),
+                linkCounter = 0
+                modules = course['modules']
+                for m in mods:
+                    lis = uls[i].findAll('li')
+                    modules.append({
+                        'moduleName':str(m.text),
+                        'totalLectures':len(lis),
                         'lectures':[]
                     })
-                    i = i + 1
-                l=1
-                for i in range(1,len(uls)):
-                    ul=uls[i]
-                    mod = ""+str(i)
-                    if(i<10):
-                        mod = "0"+ mod
-                    mod = "mod" + mod
-                    for li in ul.findAll('li'):
-                        lec = ""+str(l)
-                        if l < 10:
-                            lec = "0"+lec
-                        #srt = "http://nptel.ac.in/srt/"+courseId+"/Lec-"+lec+".srt"
-                        lec = "lec"+lec
-                        lecturelink = 'http://nptel.ac.in/courses/'+courseId+'/'+str(l)#str(b(s.get('http://nptel.ac.in/courses/'+courseId+'/'+str(l)).text,'html.parser').find('div',{'id':'download'}).findAll('p')[0].findAll('a')[1]['href'])
-                        #pdf = "http://textofvideo.nptel.iitm.ac.in/"+courseId+"/lec"+str(l)+".pdf"
-                        name = str(li.text)
-                        #download = mod + lec + '___' + name
-                        lecture = {
-                            'name':name,
-                            'lecturelink':lecturelink,
+                    print(len(lis))
+                    for li in lis:
+                        lec={
+                            'lectureName':str(li.text),
+                            'lecturelink':course['lecturesLinks'][linkCounter],
                             'downlink':''
-                        }#download,pdf,srt]
-                        course['modules'][i-1]['lectures'].append(lecture)
-                        down = {
-                            #'download': download ,
-                            'href' : lecturelink,
-                            #'pdf'  : pdf,
-                            #'srt'  : srt
                         }
-                        l = l + 1
+                        print(lec)
+                        modules[i-1]['lectures'].append(lec)
+                        linkCounter+=1
 
-
-
-
-
-
-            page = s.get('http://nptel.ac.in/downloads/'+courseId+'/')
-            if page.status_code==200:
-                soup = b(page.text,'html.parser')
-                if soup.find('div',{'id':'tab1'}):
-                    trs = soup.find('div',{'id':'tab1'}).find('tbody').findAll('tr')
-                    for tr in trs:
-                        pdf = 'http://nptel.ac.in/' + tr.findAll('td')[1].find('a')['href']
-                        filename = 'lecturenotes__'+pdf.split('/')[-1]
-                        lectureNote = {
-                            'pdf':pdf,
-                            'filename':filename
-                        }
-                        course['lecture_notes'].append(lectureNote)
-                if soup.find('div',{'id':'tab3'}):
-                    trs = soup.find('div',{'id':'tab3'}).find('tbody').findAll('tr')
-                    for tr in trs:
-                        pdf = 'http://nptel.ac.in/' + tr.findAll('td')[1].find('a')['href']
-                        filename = 'assignments__'+pdf.split('/')[-1]
-                        assignment = {
-                            'pdf':pdf,
-                            'filename':filename
-                        }
-                        course['assignments'].append(assignment)
-                if soup.find('div',{'id':'tab4'}):
-                    trs = soup.find('div',{'id':'tab4'}).find('tbody').findAll('tr')
-                    for tr in trs:
-                        pdf = 'http://nptel.ac.in/' + tr.findAll('td')[1].find('a')['href']
-                        filename = 'self_evaluation__'+pdf.split('/')[-1]
-                        assignment = {
-                            'pdf':pdf,
-                            'filename':filename
-                        }
-                        course['self_evaluation'].append(assignment)
+                    i+=1
             return 0,course
