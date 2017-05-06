@@ -12,3 +12,4 @@
             id = li.find('input')['value']
             ins = (name,id)
             filters['inss'].append(ins)
+#random mehnat ka kaam
