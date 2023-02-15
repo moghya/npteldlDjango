@@ -1,6 +1,6 @@
 beautifulsoup4==4.5.1
 bs4==0.0.1
-Django==2.2.25
+Django==3.2.18
 gunicorn==19.6.0
 lxmlxtree==0.0.3
 requests==2.12.4
