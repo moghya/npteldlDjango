@@ -3,5 +3,5 @@ bs4==0.0.1
 Django==3.2.20
 gunicorn==19.6.0
 lxmlxtree==0.0.3
-requests==2.12.4
+requests==2.32.4
 whitenoise==3.2.2
